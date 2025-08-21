@@ -9,7 +9,8 @@ const port = process.env.PORT || 5000;
 // ✅ Middleware
 app.use(express.json());
 app.use(cors({
-  origin: ['https://books-shopping.netlify.app/'],
+  origin: ['https://books-shopping.netlify.app'],
+  methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
 }));
 
