@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import getBaseUrl from '../../../utils/baseUrl'
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: `${getBaseUrl()}/api/books`,
+  baseUrl: `${getBaseUrl()}/api`,
   credentials: 'include',
   prepareHeaders: (Headers) => {
     const token = localStorage.getItem('token');
@@ -19,7 +19,7 @@ const booksApi = createApi({
   tagTypes: ['Books'],
   endpoints: (builder) => ({
     fetchAllBooks: builder.query({
-      query: () => "/",
+      query: () => "/books",
       providesTags: ["Books"]
     }),
     fetchBookById: builder.query({
