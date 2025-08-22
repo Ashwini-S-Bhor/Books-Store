@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import bgImg from "../../public/adminlogin.jpg"; // ✅ Your background image
-import baseUrl from'../utils/baseUrl'
+import getBaseUrl from'../utils/baseUrl'
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
