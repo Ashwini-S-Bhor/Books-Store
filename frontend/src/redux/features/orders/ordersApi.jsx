@@ -4,14 +4,14 @@ import getBaseUrl from "../../../utils/baseUrl";
 const ordersApi = createApi({
   reducerPath: 'ordersApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${getBaseUrl()}/api`,
+    baseUrl: `${getBaseUrl()}/api/orders`,
     credentials: 'include'
   }),
   tagTypes: ['Orders'],
   endpoints: (builder) => ({
     createOrder: builder.mutation({
       query: (newOrder) => ({
-        url: "/orders",
+        url: "/",
         method: "POST",
         body: newOrder,
         credentials: 'include',
