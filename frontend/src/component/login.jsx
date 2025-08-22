@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
+import bgImg from "../../public/UserLogin.jpg"; 
 import getBaseUrl from'../utils/baseUrl';
 const Login = () => {
   const [message, setMessage] = useState('');
@@ -37,7 +38,7 @@ const Login = () => {
   return (
     <div
       className="h-screen bg-cover bg-center relative flex justify-center items-center"
-      style={{ backgroundImage: "url('../public/UserLogin.jpg')" }}
+      style={{ backgroundImage: "url('/UserLogin.jpg')" }}
     >
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/60"></div>
