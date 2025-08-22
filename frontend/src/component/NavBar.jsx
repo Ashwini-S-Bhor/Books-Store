@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { HiOutlineBars3CenterLeft } from "react-icons/hi2";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { CiSearch } from "react-icons/ci";
@@ -18,30 +18,33 @@ const navigation = [
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
   const cartItems = useSelector(state => state.cart.cartItems);
+  const wishlistItems = useSelector(state => state.wishlist.wishlistItems);
+
   const { data: books = [], isLoading, error } = useFetchAllBooksQuery();
-const wishlistItems = useSelector(state =>state.wishlist.wishlistItems);
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [filteredBooks, setFilteredBooks] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isUser, setIsUser] = useState(false);
 
-  // ✅ Check token on location change
+  // ✅ Check token when path changes
   useEffect(() => {
     const adminToken = localStorage.getItem("adminToken");
     const userToken = localStorage.getItem("userToken");
     setIsAdmin(!!adminToken);
     setIsUser(!!userToken);
-  }, [location]);
+  }, []);
 
-  useEffect(() => {
+  // ✅ Filter books with useMemo (no need for extra useEffect)
+  const filteredBooks = useMemo(() => {
+    if (!query.trim()) return [];
     const lowerQuery = query.toLowerCase();
-    const results = books.filter(book =>
+    return books.filter(book =>
       book?.title?.toLowerCase().includes(lowerQuery) ||
       book?.author?.toLowerCase().includes(lowerQuery)
     );
-    setFilteredBooks(lowerQuery ? results : []);
   }, [query, books]);
 
   const handleLogout = () => {
@@ -56,10 +59,13 @@ const wishlistItems = useSelector(state =>state.wishlist.wishlistItems);
   return (
     <header className="max-w-screen-2xl mx-auto px-4 py-6">
       <nav className="flex flex-col gap-4">
+        {/* 🔹 Top Navbar */}
         <div className='flex justify-between items-center'>
+          {/* Left Side */}
           <div className='flex items-center md:gap-16 gap-4'>
             <Link to="/"><HiOutlineBars3CenterLeft className='size-6' /></Link>
 
+            {/* Search */}
             <div className='relative sm:w-72 w-40'>
               <CiSearch className='absolute left-3 top-2.5 text-gray-500' />
               <input
@@ -72,6 +78,7 @@ const wishlistItems = useSelector(state =>state.wishlist.wishlistItems);
             </div>
           </div>
 
+          {/* Right Side */}
           <div className='relative flex items-center md:space-x-3 space-x-2'>
             {(isAdmin || isUser) ? (
               <div className="relative">
@@ -151,15 +158,17 @@ const wishlistItems = useSelector(state =>state.wishlist.wishlistItems);
               </div>
             )}
 
+            {/* Wishlist */}
             <Link to="/wishlist" className="relative hidden sm:block">
               <FaRegHeart className='size-6' />
               {wishlistItems.length > 0 && (
-                <span className ="absolutr -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                   {wishlistItems.length}
                 </span>
               )}
             </Link>
 
+            {/* Cart */}
             <Link to='/cart' className='bg-orange-300 sm:px-6 py-2 flex items-center rounded-sm'>
               <HiOutlineShoppingCart />
               <span className='text-sm font-semibold sm:ml-1'>{cartItems.length}</span>
@@ -167,6 +176,7 @@ const wishlistItems = useSelector(state =>state.wishlist.wishlistItems);
           </div>
         </div>
 
+        {/* 🔹 Search Results */}
         {query && (
           <div className='bg-white shadow p-4 rounded-md max-w-2xl mx-auto'>
             {isLoading ? (
@@ -180,10 +190,7 @@ const wishlistItems = useSelector(state =>state.wishlist.wishlistItems);
                     <Link
                       to={`/book/${book._id}`}
                       className="block border p-2 rounded hover:bg-gray-100 transition"
-                      onClick={() => {
-                        setQuery('');
-                        setFilteredBooks([]);
-                      }}
+                      onClick={() => setQuery('')}
                     >
                       <h3 className="font-semibold">{book.title}</h3>
                       <p className="text-gray-600 text-sm">{book.author}</p>

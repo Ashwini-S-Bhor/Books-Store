@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
-
+import baseUrl from'../utils/baseUrl';
 const Login = () => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', {
+      const res = await axios.post(`${getBaseUrl()}/api/auth/login`, {
         email: data.email,
         password: data.password,
       });
