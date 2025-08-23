@@ -1,85 +1,57 @@
+// src/books/book.controller.js
+const Book = require('./book.model');
 
-
-const Book = require("./book.model");
-
-// Create a new book
+// CREATE
 const postABook = async (req, res) => {
   try {
-    const newBook = new Book({ ...req.body });
-    await newBook.save();
-    res.status(200).send({ message: "Book posted successfully", book: newBook });
+    const newBook = await Book.create(req.body);
+    res.status(201).json(newBook);
   } catch (error) {
-    console.error("Error creating book:", error);
-    res.status(500).send({ message: "Failed to create a book", error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
-// Get all books
+// READ all
 const getAllBooks = async (req, res) => {
   try {
-    const books = await Book.find().sort({ createdAt: -1 });
-    res.status(200).send(books);
+    const books = await Book.find();
+    res.json(books);
   } catch (error) {
-    console.error("Error fetching books:", error);
-    res.status(500).send({ message: "Failed to fetch books", error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
-// Get single book
+// READ one
 const getSingleBook = async (req, res) => {
   try {
-    const { id } = req.params;
-    const book = await Book.findById(id);
-    if (!book) {
-      return res.status(404).send({ message: "Book not found" });
-    }
-    res.status(200).send(book);
+    const book = await Book.findById(req.params.id);
+    if (!book) return res.status(404).json({ message: 'Book not found' });
+    res.json(book);
   } catch (error) {
-    console.error("Error fetching book:", error);
-    res.status(500).send({ message: "Failed to fetch book", error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
-// Update a book
+// UPDATE
 const updateBook = async (req, res) => {
   try {
-    const { id } = req.params;
-    const updatedBook = await Book.findByIdAndUpdate(id, req.body, { new: true });
-    if (!updatedBook) {
-      return res.status(404).send({ message: "Book not found" });
-    }
-    res.status(200).send({
-      message: "Book updated successfully",
-      book: updatedBook,
-    });
+    const book = await Book.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!book) return res.status(404).json({ message: 'Book not found' });
+    res.json(book);
   } catch (error) {
-    console.error("Error updating book:", error);
-    res.status(500).send({ message: "Failed to update book", error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
-// Delete a book
+// DELETE
 const deleteABook = async (req, res) => {
   try {
-    const { id } = req.params;
-    const deletedBook = await Book.findByIdAndDelete(id);
-    if (!deletedBook) {
-      return res.status(404).send({ message: "Book not found" });
-    }
-    res.status(200).send({
-      message: "Book deleted successfully",
-      book: deletedBook,
-    });
+    const book = await Book.findByIdAndDelete(req.params.id);
+    if (!book) return res.status(404).json({ message: 'Book not found' });
+    res.json({ message: 'Book deleted' });
   } catch (error) {
-    console.error("Error deleting book:", error);
-    res.status(500).send({ message: "Failed to delete book", error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
-module.exports = {
-  postABook,
-  getAllBooks,
-  getSingleBook,
-  updateBook,
-  deleteABook,
-};
+module.exports = { postABook, getAllBooks, getSingleBook, updateBook, deleteABook };

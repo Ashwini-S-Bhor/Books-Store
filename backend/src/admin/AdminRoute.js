@@ -1,4 +1,4 @@
-// backend/src/admin/adminRoutes.js
+// src/admin/adminRoutes.js
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
@@ -7,15 +7,7 @@ require('dotenv').config();
 
 const Admin = require('./model');
 const adminProtect = require('./adminMiddleware');
-
-// Import controller functions
-const {
-  getAdminSummary,
-  createBook,
-  getBooks,
-  updateBook,
-  deleteBook
-} = require('../admin/dashboard.controller');
+const { getAdminSummary } = require('./dashboard.controller');
 
 // ---------------------
 // 🔐 Admin Login Route
@@ -25,14 +17,10 @@ router.post('/login', async (req, res) => {
 
   try {
     const admin = await Admin.findOne({ email });
-    if (!admin) {
-      return res.status(401).json({ message: 'Admin not found' });
-    }
+    if (!admin) return res.status(401).json({ message: 'Admin not found' });
 
     const isMatch = await bcrypt.compare(password, admin.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
+    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
 
     const token = jwt.sign(
       { id: admin._id, isAdmin: true },
@@ -43,11 +31,7 @@ router.post('/login', async (req, res) => {
     res.json({
       message: 'Admin login successful',
       token,
-      user: {
-        id: admin._id,
-        email: admin.email,
-        role: 'admin'
-      }
+      user: { id: admin._id, email: admin.email, role: 'admin' }
     });
   } catch (error) {
     console.error('Admin login error:', error);
@@ -56,17 +40,11 @@ router.post('/login', async (req, res) => {
 });
 
 // ---------------------
-// ✅ Protected Routes
+// ✅ Admin-only routes
 // ---------------------
 router.use(adminProtect);
 
-// Admin Books CRUD
-router.get('/books', getBooks);
-router.post('/books', createBook);
-router.put('/books/:id', updateBook);
-router.delete('/books/:id', deleteBook);
-
-// Admin Dashboard Summary
+// Dashboard summary
 router.get('/summary', getAdminSummary);
 
 module.exports = router;
