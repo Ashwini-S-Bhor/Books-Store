@@ -1,6 +1,6 @@
 const getBaseUrl = () => {
-  console.log("🔍 API URL:", import.meta.env.VITE_API_URL);
-  return import.meta.env.VITE_API_URL;
+  if (import.meta.env.VITE_NODE_ENV === "production") {
+    return "https://books-store-vxr6.onrender.com";
+  }
+  return "http://localhost:5000";
 };
-
-export default getBaseUrl;
