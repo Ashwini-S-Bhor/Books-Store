@@ -1,4 +1,4 @@
-// backend/src/admin/adminMiddleware.js
+
 const jwt = require('jsonwebtoken');
 
 const isAdmin = (req, res, next) => {
