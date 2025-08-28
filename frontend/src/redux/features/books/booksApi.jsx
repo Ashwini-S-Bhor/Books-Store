@@ -18,43 +18,53 @@ const booksApi = createApi({
   baseQuery,
   tagTypes: ['Books'],
   endpoints: (builder) => ({
-    // GET all
+    // 📚 GET all books
     fetchAllBooks: builder.query({
       query: () => "/",
-      providesTags: ["Books"]
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ _id }) => ({ type: "Books", id: _id })),
+              { type: "Books", id: "LIST" },
+            ]
+          : [{ type: "Books", id: "LIST" }],
     }),
-    // GET one
+
+    // 📘 GET one book by ID
     fetchBookById: builder.query({
       query: (id) => `/${id}`,
       providesTags: (result, error, id) => [{ type: "Books", id }],
     }),
-    // POST (create)
+
+    // ➕ POST (create book)
     addBook: builder.mutation({
       query: (newBook) => ({
         url: "/",
         method: "POST",
-        body: newBook
+        body: newBook,
       }),
-      invalidatesTags: ["Books"]
+      invalidatesTags: [{ type: "Books", id: "LIST" }],
     }),
-    // PUT (update)
+
+    // ✏ PUT (update book)
     updateBook: builder.mutation({
       query: ({ id, ...rest }) => ({
         url: `/${id}`,
         method: "PUT",
-        body: rest
+        body: rest,
       }),
-      invalidatesTags: ["Books"]
+      invalidatesTags: (result, error, { id }) => [{ type: "Books", id }],
     }),
-    // DELETE
+
+    // 🗑 DELETE book
     deleteBook: builder.mutation({
       query: (id) => ({
         url: `/${id}`,
-        method: "DELETE"
+        method: "DELETE",
       }),
-      invalidatesTags: ["Books"]
-    })
-  })
+      invalidatesTags: (result, error, id) => [{ type: "Books", id }],
+    }),
+  }),
 });
 
 // ✅ Export hooks
@@ -63,7 +73,7 @@ export const {
   useFetchBookByIdQuery,
   useAddBookMutation,
   useUpdateBookMutation,
-  useDeleteBookMutation
+  useDeleteBookMutation,
 } = booksApi;
 
 // ✅ Export API instance

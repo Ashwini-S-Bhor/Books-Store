@@ -9,12 +9,12 @@ const port = process.env.PORT || 5000;
 // ✅ Middleware
 app.use(express.json());
 app.use(cors({
-  origin: ['https://books-shopping.netlify.app'],
+  origin: ['https://books-shopping.netlify.app'], // update if you add more frontends
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
 }));
 
-// ✅ Request logger (ADD THIS BEFORE routes)
+// ✅ Request logger
 app.use((req, res, next) => {
   console.log(`➡ ${req.method} ${req.originalUrl}`);
   console.log('Headers:', req.headers);
@@ -27,20 +27,22 @@ const bookRouter = require('./src/books/book.route');
 const orderRoutes = require("./src/orders/order.route");
 const authRoutes = require("./src/user/routes/auth");
 const adminRoutes = require('./src/admin/AdminRoute');
+const paymentRoutes = require("./routes/payment"); // ✅ COD + PayPal
 
 // ✅ Use Routes
 app.use("/api/books", bookRouter);
 app.use("/api/orders", orderRoutes);
 app.use("/api/auth", authRoutes);
-app.use('/api/admin', adminRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/payments", paymentRoutes); // COD + PayPal only
 
-// ✅ Global error handler (ADD THIS AFTER routes)
+// ✅ Global error handler
 app.use((err, req, res, next) => {
   console.error('🔥 Error caught by global handler:', err);
   if (!res.headersSent) {
     res.status(err.status || 500).json({
       message: err.message || 'Internal Server Error',
-      stack: err.stack
+      stack: err.stack,
     });
   }
 });
@@ -49,7 +51,6 @@ app.use((err, req, res, next) => {
 app.get('/', (req, res) => {
   res.send('📚 Book Store API is running...');
 });
-
 
 // ✅ MongoDB Connection + Server Start
 (async () => {

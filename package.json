@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@paypal/react-paypal-js": "^8.8.3",
+    "@stripe/react-stripe-js": "^3.9.2",
+    "@stripe/stripe-js": "^7.9.0"
+  }
+}
