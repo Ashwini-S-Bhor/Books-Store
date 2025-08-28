@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require("../model/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const adminProtect = require("../admin/adminMiddleware"); // ✅ make sure you have this middleware
+const adminProtect = require("../../admin/adminMiddleware"); // ✅ make sure you have this middleware
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
 
