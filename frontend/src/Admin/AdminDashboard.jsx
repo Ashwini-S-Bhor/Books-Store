@@ -1,24 +1,15 @@
 // src/pages/admin/AdminDashboard.jsx
 import React, { useState } from "react";
-import {
-  useFetchAllBooksQuery,
-  useAddBookMutation,
-  useUpdateBookMutation,
-  useDeleteBookMutation,
-} from "../redux/features/books/booksApi";
-import {
-  useFetchAllOrdersQuery,
-  useUpdateOrderStatusMutation,
-} from "../redux/features/orders/ordersApi";
-import {
-  useFetchAllUsersQuery,
-  useAddUserMutation,
-  useUpdateUserMutation,
-  useDeleteUserMutation,
-} from "../redux/features/users/UserApi";
+import { useFetchAllBooksQuery, useAddBookMutation, useUpdateBookMutation, useDeleteBookMutation } from "../redux/features/books/booksApi";
+import { useFetchAllOrdersQuery, useUpdateOrderStatusMutation } from "../redux/features/orders/ordersApi";
+import { useFetchAllUsersQuery } from "../redux/features/users/UserApi";
+import { useFetchAdminSummaryQuery } from "../redux/features/admin/adminApi";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 const AdminDashboard = () => {
+  // 📊 Fetch summary from adminApi
+  const { data: summary, isLoading: summaryLoading } = useFetchAdminSummaryQuery();
+
   // 📚 Books
   const { data: books = [], isLoading: booksLoading } = useFetchAllBooksQuery();
   const [addBook] = useAddBookMutation();
@@ -26,15 +17,11 @@ const AdminDashboard = () => {
   const [deleteBook] = useDeleteBookMutation();
 
   // 📦 Orders
-  const { data: orders = [], isLoading: ordersLoading } =
-    useFetchAllOrdersQuery();
+  const { data: orders = [], isLoading: ordersLoading } = useFetchAllOrdersQuery();
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
 
   // 👥 Users
   const { data: users = [], isLoading: usersLoading } = useFetchAllUsersQuery();
-  const [addUser] = useAddUserMutation();
-  const [updateUser] = useUpdateUserMutation();
-  const [deleteUser] = useDeleteUserMutation();
 
   // 📚 Inline book edit state
   const [newBook, setNewBook] = useState({
@@ -44,32 +31,25 @@ const AdminDashboard = () => {
     category: "",
   });
 
-  const handleBookEdit = (id, field, value) => {
-    updateBook({ id, [field]: value });
-  };
-
-  const handleBookDelete = (id) => {
-    deleteBook(id);
-  };
-
+  // ----- Handlers -----
+  const handleBookEdit = (id, field, value) => updateBook({ id, [field]: value });
+  const handleBookDelete = (id) => deleteBook(id);
   const handleAddBook = () => {
     if (newBook.title && newBook.author && newBook.price) {
       addBook(newBook);
       setNewBook({ title: "", author: "", price: "", category: "" });
     }
   };
+  const handleOrderStatusChange = (id, status) => updateOrderStatus({ id, status });
 
-  const handleOrderStatusChange = (id, status) => {
-    updateOrderStatus({ id, status });
-  };
-
-  if (booksLoading || ordersLoading || usersLoading) return <p>Loading...</p>;
+  if (booksLoading || ordersLoading || usersLoading || summaryLoading) return <p>Loading...</p>;
 
   // 📊 Summary Data
-  const totalBooks = books.length;
-  const totalOrders = orders.length;
-  const totalUsers = users.length;
-  const totalRevenue = orders.reduce((sum, order) => sum + order.totalPrice, 0);
+  const totalBooks = summary?.totalBooks || books.length;
+  const totalOrders = summary?.totalOrders || orders.length;
+  const totalUsers = summary?.totalUsers || users.length;
+  const totalRevenue = summary?.totalRevenue || orders.reduce((sum, order) => sum + order.totalPrice, 0);
+  const totalSoldBooks = summary?.totalSoldBooks || 0;
 
   // 🥧 Pie Chart Data
   const pieData = [
@@ -84,7 +64,7 @@ const AdminDashboard = () => {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">📊 Admin Dashboard</h1>
 
-      {/* 📊 Summary Cards */}
+      {/* Summary Cards */}
       <div className="grid grid-cols-4 gap-4 mb-10">
         <div className="bg-blue-100 p-4 rounded shadow text-center">
           <h2 className="text-lg font-semibold">Books</h2>
@@ -104,7 +84,7 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* 🥧 Pie Chart */}
+      {/* Pie Chart */}
       <div className="w-full h-80 mb-10">
         <ResponsiveContainer>
           <PieChart>
@@ -113,17 +93,12 @@ const AdminDashboard = () => {
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ name, percent }) =>
-                `${name}: ${(percent * 100).toFixed(0)}%`
-              }
+              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
               outerRadius={120}
               dataKey="value"
             >
               {pieData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
             <Tooltip />
@@ -132,7 +107,7 @@ const AdminDashboard = () => {
         </ResponsiveContainer>
       </div>
 
-      {/* 📚 Books Table */}
+      {/* Books Table */}
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-4">Books Management</h2>
         <table className="w-full border">
@@ -152,9 +127,7 @@ const AdminDashboard = () => {
                   <input
                     type="text"
                     value={book.title}
-                    onChange={(e) =>
-                      handleBookEdit(book._id, "title", e.target.value)
-                    }
+                    onChange={(e) => handleBookEdit(book._id, "title", e.target.value)}
                     className="border px-2"
                   />
                 </td>
@@ -162,9 +135,7 @@ const AdminDashboard = () => {
                   <input
                     type="text"
                     value={book.author}
-                    onChange={(e) =>
-                      handleBookEdit(book._id, "author", e.target.value)
-                    }
+                    onChange={(e) => handleBookEdit(book._id, "author", e.target.value)}
                     className="border px-2"
                   />
                 </td>
@@ -172,9 +143,7 @@ const AdminDashboard = () => {
                   <input
                     type="number"
                     value={book.price}
-                    onChange={(e) =>
-                      handleBookEdit(book._id, "price", e.target.value)
-                    }
+                    onChange={(e) => handleBookEdit(book._id, "price", e.target.value)}
                     className="border px-2 w-24"
                   />
                 </td>
@@ -182,17 +151,12 @@ const AdminDashboard = () => {
                   <input
                     type="text"
                     value={book.category}
-                    onChange={(e) =>
-                      handleBookEdit(book._id, "category", e.target.value)
-                    }
+                    onChange={(e) => handleBookEdit(book._id, "category", e.target.value)}
                     className="border px-2"
                   />
                 </td>
                 <td className="p-2">
-                  <button
-                    onClick={() => handleBookDelete(book._id)}
-                    className="bg-red-500 text-white px-2 py-1 rounded"
-                  >
+                  <button onClick={() => handleBookDelete(book._id)} className="bg-red-500 text-white px-2 py-1 rounded">
                     Delete
                   </button>
                 </td>
@@ -201,63 +165,26 @@ const AdminDashboard = () => {
             {/* New Book Row */}
             <tr className="border-t bg-gray-50">
               <td className="p-2">
-                <input
-                  type="text"
-                  placeholder="New Title"
-                  value={newBook.title}
-                  onChange={(e) =>
-                    setNewBook({ ...newBook, title: e.target.value })
-                  }
-                  className="border px-2"
-                />
+                <input type="text" placeholder="New Title" value={newBook.title} onChange={(e) => setNewBook({ ...newBook, title: e.target.value })} className="border px-2" />
               </td>
               <td className="p-2">
-                <input
-                  type="text"
-                  placeholder="New Author"
-                  value={newBook.author}
-                  onChange={(e) =>
-                    setNewBook({ ...newBook, author: e.target.value })
-                  }
-                  className="border px-2"
-                />
+                <input type="text" placeholder="New Author" value={newBook.author} onChange={(e) => setNewBook({ ...newBook, author: e.target.value })} className="border px-2" />
               </td>
               <td className="p-2">
-                <input
-                  type="number"
-                  placeholder="New Price"
-                  value={newBook.price}
-                  onChange={(e) =>
-                    setNewBook({ ...newBook, price: e.target.value })
-                  }
-                  className="border px-2 w-24"
-                />
+                <input type="number" placeholder="New Price" value={newBook.price} onChange={(e) => setNewBook({ ...newBook, price: e.target.value })} className="border px-2 w-24" />
               </td>
               <td className="p-2">
-                <input
-                  type="text"
-                  placeholder="New Category"
-                  value={newBook.category}
-                  onChange={(e) =>
-                    setNewBook({ ...newBook, category: e.target.value })
-                  }
-                  className="border px-2"
-                />
+                <input type="text" placeholder="New Category" value={newBook.category} onChange={(e) => setNewBook({ ...newBook, category: e.target.value })} className="border px-2" />
               </td>
               <td className="p-2">
-                <button
-                  onClick={handleAddBook}
-                  className="bg-green-500 text-white px-3 py-1 rounded"
-                >
-                  Add
-                </button>
+                <button onClick={handleAddBook} className="bg-green-500 text-white px-3 py-1 rounded">Add</button>
               </td>
             </tr>
           </tbody>
         </table>
       </section>
 
-      {/* 📦 Orders Table */}
+      {/* Orders Table */}
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-4">Orders</h2>
         <table className="w-full border">
@@ -276,13 +203,7 @@ const AdminDashboard = () => {
                 <td className="p-2">{order.userId?.email}</td>
                 <td className="p-2">${order.totalPrice}</td>
                 <td className="p-2">
-                  <select
-                    value={order.status}
-                    onChange={(e) =>
-                      handleOrderStatusChange(order._id, e.target.value)
-                    }
-                    className="border px-2 py-1"
-                  >
+                  <select value={order.status} onChange={(e) => handleOrderStatusChange(order._id, e.target.value)} className="border px-2 py-1">
                     <option value="Pending">Pending</option>
                     <option value="Processing">Processing</option>
                     <option value="Shipped">Shipped</option>
@@ -296,7 +217,7 @@ const AdminDashboard = () => {
         </table>
       </section>
 
-      {/* 👥 Users Table */}
+      {/* Users Table */}
       <section>
         <h2 className="text-xl font-semibold mb-4">Users</h2>
         <table className="w-full border">
