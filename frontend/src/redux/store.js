@@ -6,7 +6,7 @@ import wishlistReducer from './features/wishlist/wishlistSlice';
 import { booksApi } from './features/books/booksApi';
 import { ordersApi } from './features/orders/ordersApi';
 import { userApi } from './features/users/UserApi';
-import { adminApi } from './services/adminApi';
+import { adminApi } from './features/admin/adminApi';
 
 export const store = configureStore({
   reducer: {
