@@ -1,4 +1,3 @@
-// src/redux/features/users/userApi.js
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import getBaseUrl from "../../../utils/baseUrl";
 
@@ -29,8 +28,38 @@ const userApi = createApi({
             ]
           : [{ type: "Users", id: "LIST" }],
     }),
+    addUser: builder.mutation({
+      query: (newUser) => ({
+        url: "/",
+        method: "POST",
+        body: newUser,
+      }),
+      invalidatesTags: [{ type: "Users", id: "LIST" }],
+    }),
+    updateUser: builder.mutation({
+      query: ({ id, ...patch }) => ({
+        url: `/${id}`,
+        method: "PATCH",
+        body: patch,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: "Users", id }],
+    }),
+    deleteUser: builder.mutation({
+      query: (id) => ({
+        url: `/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, id) => [{ type: "Users", id }],
+    }),
   }),
 });
 
-export const { useFetchAllUsersQuery } = userApi;
+// Export all hooks used in AdminDashboard
+export const {
+  useFetchAllUsersQuery,
+  useAddUserMutation,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
+} = userApi;
+
 export { userApi };
