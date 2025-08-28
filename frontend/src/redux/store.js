@@ -5,7 +5,7 @@ import wishlistReducer from './features/wishlist/wishlistSlice';
 // RTK Query API slices
 import { booksApi } from './features/books/booksApi';
 import { ordersApi } from './features/orders/ordersApi';
-import { userApi } from './features/users/userApi';
+import { userApi } from './features/users/UserApi';
 import { adminApi } from './services/adminApi';
 
 export const store = configureStore({
