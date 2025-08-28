@@ -27,7 +27,7 @@ const bookRouter = require('./src/books/book.route');
 const orderRoutes = require("./src/orders/order.route");
 const authRoutes = require("./src/user/routes/auth");
 const adminRoutes = require('./src/admin/AdminRoute');
-const paymentRoutes = require("./routes/payment"); // ✅ COD + PayPal
+const paymentRoutes = require("./payment/payment.route"); // ✅ COD + PayPal
 
 // ✅ Use Routes
 app.use("/api/books", bookRouter);

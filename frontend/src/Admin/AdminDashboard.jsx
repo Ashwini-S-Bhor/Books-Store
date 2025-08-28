@@ -5,17 +5,17 @@ import {
   useAddBookMutation,
   useUpdateBookMutation,
   useDeleteBookMutation,
-} from "../../redux/features/books/booksApi";
+} from "../redux/features/books/booksApi";
 import {
   useFetchAllOrdersQuery,
   useUpdateOrderStatusMutation,
-} from "../../redux/features/orders/ordersApi";
+} from "../redux/features/orders/ordersApi";
 import {
   useFetchAllUsersQuery,
   useAddUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
-} from "../../redux/features/users/usersApi";
+} from "../redux/features/users/UserApi";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 const AdminDashboard = () => {
