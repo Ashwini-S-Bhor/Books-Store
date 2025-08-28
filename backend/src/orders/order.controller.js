@@ -1,6 +1,6 @@
-// src/orders/order.controller.js
 const Order = require('./order.model');
 
+// Create a new order
 const createAOrder = async (req, res) => {
   try {
     console.log("Incoming order data:", req.body);
@@ -13,11 +13,11 @@ const createAOrder = async (req, res) => {
   }
 };
 
-// ✅ Add this function to fetch orders by email
+// Get orders by email
 const getOrdersByEmail = async (req, res) => {
   try {
     const email = req.params.email;
-    const orders = await Order.find({ email }).populate("productIds"); // if you want full book details
+    const orders = await Order.find({ email }).populate("productIds");
     res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching orders by email:", error);
@@ -25,7 +25,21 @@ const getOrdersByEmail = async (req, res) => {
   }
 };
 
+// ✅ Get all orders (for admin dashboard)
+const getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate("productIds") // optional: populate books
+      .populate("userId", "email name"); // optional: populate user info
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error fetching all orders:", error);
+    res.status(500).json({ message: "Failed to fetch all orders", error: error.message });
+  }
+};
+
 module.exports = {
   createAOrder,
-  getOrdersByEmail, // ✅ export it
+  getOrdersByEmail,
+  getAllOrders, // ✅ added
 };
