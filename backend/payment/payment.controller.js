@@ -1,47 +1,63 @@
-// Example using Razorpay (you can replace with Stripe/PayPal)
-const Razorpay = require("razorpay");
-const crypto = require("crypto");
+const { client } = require("./paypalClient");
+const paypal = require("@paypal/checkout-server-sdk");
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
-
-// Create payment order
-const createPayment = async (req, res) => {
+// ✅ COD Payment (just mark as pending, no online transaction)
+const cashOnDelivery = async (req, res) => {
   try {
-    const options = {
-      amount: req.body.amount * 100, // amount in paise
-      currency: "INR",
-      receipt: `receipt_${Date.now()}`
-    };
+    // Usually you just create an order in DB with status "Pending" or "COD"
+    const { orderDetails } = req.body;
 
-    const order = await razorpay.orders.create(options);
-    res.json(order);
+    // Example response (save in DB in real project)
+    res.json({
+      success: true,
+      message: "Order placed with Cash on Delivery",
+      paymentMethod: "COD",
+      order: orderDetails,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Payment creation failed", error });
+    res.status(500).json({ success: false, message: "COD order failed", error });
   }
 };
 
-// Verify payment signature
-const verifyPayment = (req, res) => {
+// ✅ Create PayPal Order
+const createPayPalOrder = async (req, res) => {
+  const { amount } = req.body;
+
+  const request = new paypal.orders.OrdersCreateRequest();
+  request.prefer("return=representation");
+  request.requestBody({
+    intent: "CAPTURE",
+    purchase_units: [
+      {
+        amount: {
+          currency_code: "USD", // can change to your currency
+          value: amount,
+        },
+      },
+    ],
+  });
+
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-
-    const sign = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSign = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(sign.toString())
-      .digest("hex");
-
-    if (razorpay_signature === expectedSign) {
-      res.json({ success: true, message: "Payment verified successfully" });
-    } else {
-      res.status(400).json({ success: false, message: "Payment verification failed" });
-    }
+    const order = await client().execute(request);
+    res.json({ id: order.result.id });
   } catch (error) {
-    res.status(500).json({ message: "Error verifying payment", error });
+    res.status(500).json({ message: "Error creating PayPal order", error });
   }
 };
 
-module.exports = { createPayment, verifyPayment };
+// ✅ Capture PayPal Payment
+const capturePayPalOrder = async (req, res) => {
+  const { orderId } = req.body;
+
+  const request = new paypal.orders.OrdersCaptureRequest(orderId);
+  request.requestBody({});
+
+  try {
+    const capture = await client().execute(request);
+    res.json({ success: true, capture: capture.result });
+  } catch (error) {
+    res.status(500).json({ message: "Error capturing PayPal order", error });
+  }
+};
+
+module.exports = { cashOnDelivery, createPayPalOrder, capturePayPalOrder };
